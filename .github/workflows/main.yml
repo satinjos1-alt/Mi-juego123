@@ -1,0 +1,39 @@
+name: Exportador Automático Gemini
+on: 
+  workflow_dispatch: # Esto activa el botón de "Run workflow"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Limpieza y Descarga
+        run: |
+          pip install gdown
+          gdown https://drive.google.com/uc?id=1ZUzXrJ1dUU_5cQzyOO6-y-oH_wEpJlda
+          unzip grabpack_in_godot.zip
+
+      - name: 2. Auto-Configuración (Yo me encargo de esto)
+        run: |
+          # Busco el proyecto solo, sin que tú me digas dónde está
+          PRJ_PATH=$(find . -name "project.godot" -exec dirname {} \;)
+          
+          # Escribo el archivo de exportación por ti
+          cat <<EOF > "$PRJ_PATH/export_presets.cfg"
+[preset.0]
+name="Android"
+platform="Android"
+runnable=true
+package/unique_name="com.auto.grabpack"
+package/name="Grabpack"
+package/signed=false
+graphics/driver="GLES3"
+EOF
+          echo "FINAL_PATH=$PRJ_PATH" >> $GITHUB_ENV
+
+      - name: 3. Exportación Final a APK
+        uses: firebelley/godot-export@v5.2.1
+        with:
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux_x86_64.zip
+          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
+          relative_project_path: ${{ env.FINAL_PATH }}
+          archive_output: true
