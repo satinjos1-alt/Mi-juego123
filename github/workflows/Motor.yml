@@ -1,35 +1,31 @@
-name: Gemini_Final_Fix
-on: 
-  workflow_dispatch:
+name: Motor_Gemini
+on: workflow_dispatch
 
 jobs:
-  export:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Descarga Automatica
+      - uses: actions/checkout@v4
+      - name: Descarga_y_Setup
         run: |
           pip install gdown
           gdown https://drive.google.com/uc?id=1ZUzXrJ1dUU_5cQzyOO6-y-oH_wEpJlda
           unzip grabpack_in_godot.zip
-          PRJ=$(find . -name "project.godot" -exec dirname {} \;)
-          cat <<EOF > "$PRJ/export_presets.cfg"
+          D=$(find . -name "project.godot" -exec dirname {} \;)
+          cat <<EOF > "$D/export_presets.cfg"
 [preset.0]
 name="Android"
 platform="Android"
 runnable=true
-package/unique_name="com.game.final"
+package/unique_name="com.gemini.game"
 package/name="Grabpack"
 package/signed=false
 EOF
-          echo "GODOT_DIR=$PRJ" >> $GITHUB_ENV
-
-      - name: Generar APK
+          echo "P=$D" >> $GITHUB_ENV
+      - name: Exportar
         uses: firebelley/godot-export@v5.2.1
         with:
           godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux_x86_64.zip
           godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
-          relative_project_path: ${{ env.GODOT_DIR }}
+          relative_project_path: ${{ env.P }}
           archive_output: true
