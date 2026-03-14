@@ -1,6 +1,6 @@
-name: Exportador_Final
+name: Manual_Build_Fixed
 on: 
-  workflow_dispatch:
+  workflow_dispatch: # Esto obliga a que SOLO funcione cuando tú le das al botón
 
 jobs:
   build:
@@ -9,31 +9,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalador Magico
+      - name: Descarga y Setup
         run: |
           pip install gdown
           gdown https://drive.google.com/uc?id=1ZUzXrJ1dUU_5cQzyOO6-y-oH_wEpJlda
           unzip grabpack_in_godot.zip
-          
-          # Buscador automatico de carpeta
           PRJ_DIR=$(find . -name "project.godot" -exec dirname {} \;)
-          
-          # Crear config de exportacion
           cat <<EOF > "$PRJ_DIR/export_presets.cfg"
 [preset.0]
 name="Android"
 platform="Android"
 runnable=true
-package/unique_name="com.tu.juego"
+package/unique_name="com.fix.grabpack"
 package/name="Grabpack"
 package/signed=false
 EOF
-          echo "RUTA=$PRJ_DIR" >> $GITHUB_ENV
+          echo "DIR_GODOT=$PRJ_DIR" >> $GITHUB_ENV
 
-      - name: Generar APK
+      - name: Exportar
         uses: firebelley/godot-export@v5.2.1
         with:
           godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_linux_x86_64.zip
           godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_export_templates.tpz
-          relative_project_path: ${{ env.RUTA }}
+          relative_project_path: ${{ env.DIR_GODOT }}
           archive_output: true
